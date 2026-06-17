@@ -26,17 +26,12 @@ services:
       retries: 10
 
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     ports:
-      - "8001:8001"
+      - "8001:8000"
     environment:
       DATABASE_URL: postgresql://user:password@postgres:5432/newsdash
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-local-dev-secret-key-change-me}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5174,http://127.0.0.1:5174}
-      PORT: 8001
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:
       postgres:
@@ -45,14 +40,11 @@ services:
         condition: service_healthy
 
   celery_worker:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     command: celery -A tasks.pipeline worker --loglevel=info
     environment:
       DATABASE_URL: postgresql://user:password@postgres:5432/newsdash
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-local-dev-secret-key-change-me}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:
       postgres:
@@ -61,14 +53,11 @@ services:
         condition: service_healthy
 
   celery_beat:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     command: celery -A tasks.pipeline beat --loglevel=info
     environment:
       DATABASE_URL: postgresql://user:password@postgres:5432/newsdash
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY: ${SECRET_KEY:-local-dev-secret-key-change-me}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:
       postgres:
@@ -77,12 +66,11 @@ services:
         condition: service_healthy
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8001}
+    build: ./frontend
     ports:
-      - "5174:80"
+      - "5174:5173"
+    environment:
+      VITE_PROXY_TARGET: http://backend:8000
     depends_on:
       - backend
 

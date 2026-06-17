@@ -32,8 +32,8 @@ export default function SignupPage() {
   return (
     <main className="auth-page">
       <section className="auth-panel">
-        <h1>Khabar</h1>
-        <p className="tagline">Your news. No noise.</p>
+        <p className="date-label">Personalized news</p>
+        <h1>Sign up</h1>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Email

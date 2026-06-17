@@ -24,14 +24,12 @@ export default function ArticleCard({
     }
   }
 
-  const topicClass = `topic-border-${topic || "other"}`;
-
   return (
-    <article className={`article-card ${topicClass}`}>
+    <article className="article-card">
       <div className="meta-row">
-        <span className="topic-name">{topic}</span>
-        <span className="source-name">{source}</span>
-        <span aria-label={`${reading_time_minutes} minute read`}>🕐 {reading_time_minutes} min</span>
+        <span className={`topic-badge topic-${topic}`}>{topic}</span>
+        <span>{source}</span>
+        <span>{reading_time_minutes} min read</span>
       </div>
       <h2>
         <a href={url} target="_blank" rel="noreferrer">

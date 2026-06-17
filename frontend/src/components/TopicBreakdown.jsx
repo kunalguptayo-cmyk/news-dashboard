@@ -8,7 +8,7 @@ export default function TopicBreakdown({ breakdown }) {
 
   return (
     <section className="topic-breakdown" aria-label="Topic breakdown">
-      <span>Today</span>
+      <span>Today:</span>
       {entries.map(([topic, count]) => (
         <span key={topic}>
           {count} {topic}

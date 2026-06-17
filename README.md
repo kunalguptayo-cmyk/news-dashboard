@@ -1,24 +1,10 @@
-# Khabar
+# Personalised News Dashboard
 
-Your news. No noise.
+A no-doom daily news dashboard: RSS ingestion, semantic deduplication, factual headline rewriting when an Anthropic key is available, ranking from feedback, and a compact React UI.
 
-Khabar is a multi-user news digest app with JWT auth. It fetches RSS sources on a schedule, deduplicates related stories, ranks them by each user's topic preferences, and serves a clean React UI.
+## Run With Docker
 
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Backend | FastAPI |
-| Frontend | React + Vite, served by nginx in production |
-| Database | PostgreSQL |
-| Queue | Redis + Celery |
-| Embeddings | sentence-transformers, all-MiniLM-L6-v2 |
-| Optional rewriting | Anthropic API |
-| Local infrastructure | Docker Compose |
-
-## Run Locally
-
-Prerequisite: Docker Desktop installed and running.
+From this folder:
 
 ```bash
 docker compose up --build
@@ -26,114 +12,46 @@ docker compose up --build
 
 Then open:
 
-- App: http://localhost:5174
+- Frontend: http://localhost:5174
 - Backend health: http://localhost:8001/health
+- Today's digest: http://localhost:8001/api/digest/today
 
-The first digest can take a minute because the pipeline fetches feeds, downloads the embedding model, embeds articles, deduplicates them, and ranks the first set.
+The first digest request may take a while because it can fetch feeds, download the sentence-transformer model, embed articles, deduplicate them, and rank the first set.
 
-## Using Khabar
+## Anthropic
 
-1. Open http://localhost:5174.
-2. Create an account with any email and a password of at least 8 characters.
-3. Log in to see your digest.
-4. Use thumbs up/down to tune future ranking toward your interests.
+The app works without an Anthropic key. In that mode, it keeps original headlines and RSS summaries.
 
-Each account has independent preferences.
-
-## Environment Variables
-
-Local Docker Compose provides development defaults for required backend variables. For production, set these explicitly:
+To enable rewriting:
 
 ```bash
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
-SECRET_KEY=your_random_32_byte_hex_secret
-CORS_ORIGINS=https://your-frontend.up.railway.app
-ANTHROPIC_API_KEY=optional
-ANTHROPIC_MODEL=claude-3-haiku-20240307
-ACCESS_TOKEN_EXPIRE_MINUTES=10080
+export ANTHROPIC_API_KEY=your_real_key
+docker compose up --build
 ```
 
-Generate a secret:
+## Manual Pipeline
+
+Trigger a refresh:
 
 ```bash
-python3 -c "import secrets; print(secrets.token_hex(32))"
-```
-
-The frontend uses `VITE_API_URL` at build time:
-
-```bash
-VITE_API_URL=https://your-backend.up.railway.app
-```
-
-## Railway Deployment
-
-The repository includes two Railway config files:
-
-- `railway.toml` for the FastAPI backend service.
-- `frontend/railway.toml` for the React/nginx frontend service.
-
-### Backend service
-
-```bash
-npm install -g @railway/cli
-railway login
-railway init
-railway add --plugin postgresql
-railway add --plugin redis
-railway up
-```
-
-Set backend environment variables in Railway:
-
-```bash
-SECRET_KEY=<output from python3 -c "import secrets; print(secrets.token_hex(32))">
-DATABASE_URL=<provided by Railway Postgres>
-REDIS_URL=<provided by Railway Redis>
-CORS_ORIGINS=https://your-frontend.up.railway.app
-```
-
-After deploy, verify:
-
-```bash
-curl https://your-backend.up.railway.app/health
-```
-
-### Frontend service
-
-In the Railway dashboard:
-
-1. Create a new service from the GitHub repo.
-2. Set the root directory to `frontend`.
-3. Add `VITE_API_URL=https://your-backend.up.railway.app`.
-4. Deploy.
-
-After the frontend URL is available, add it to the backend service's `CORS_ORIGINS` and redeploy the backend if needed.
-
-## Manual Pipeline Trigger
-
-```bash
+curl -X POST http://localhost:8000/api/pipeline/run
 curl -X POST http://localhost:8001/api/pipeline/run
 ```
 
-Celery Beat also runs this automatically every 30 minutes.
+Celery Beat also schedules the pipeline every 30 minutes.
 
-## Auth API
+## Backend Notes
+
+The backend creates tables on startup for local convenience. The database schema matches the requested SQLAlchemy models:
+
+- `articles`
+- `user_feedback`
+- `topic_weights`
+
+## Useful Checks
 
 ```bash
-curl -X POST http://localhost:8001/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","password":"yourpassword"}'
-
-curl -X POST http://localhost:8001/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"you@example.com","password":"yourpassword"}'
-
-curl http://localhost:8001/api/digest/today \
-  -H "Authorization: Bearer <your_token>"
-
-curl -X POST http://localhost:8001/api/feedback \
-  -H "Authorization: Bearer <your_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"article_id":"<uuid>","feedback":"up"}'
+curl http://localhost:8001/api/digest/today
+curl -X POST http://localhost:8001/api/pipeline/run
+docker compose logs -f backend celery_worker celery_beat
 ```

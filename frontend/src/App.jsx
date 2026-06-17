@@ -40,7 +40,7 @@ function DigestPage() {
   if (loading) {
     return (
       <main className="page">
-        <section className="state-panel">Loading your Khabar...</section>
+        <section className="state-panel">Loading today's digest...</section>
       </main>
     );
   }
@@ -58,7 +58,7 @@ function DigestPage() {
   return (
     <main className="page">
       <nav className="top-nav" aria-label="Account">
-        <Link to="/" className="brand-link">Khabar</Link>
+        <Link to="/">Digest</Link>
         <button
           type="button"
           onClick={() => {
@@ -73,7 +73,7 @@ function DigestPage() {
       <TopicBreakdown breakdown={digest.topic_breakdown} />
       <section className="article-list" aria-label="Daily news articles">
         {articles.length === 0 ? (
-          <div className="state-panel">No stories are ready yet.</div>
+          <div className="state-panel">No articles are ready yet.</div>
         ) : (
           articles.map((article) => <ArticleCard key={article.id} {...article} />)
         )}

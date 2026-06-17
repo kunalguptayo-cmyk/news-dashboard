@@ -11,8 +11,7 @@ export default function DigestHeader({ date, count }) {
     <header className="digest-header">
       <div>
         <p className="date-label">{formatted}</p>
-        <h1>Khabar</h1>
-        <p className="tagline">Your news. No noise.</p>
+        <h1>Your daily digest</h1>
       </div>
       <p className="article-count">{count} stories</p>
     </header>
