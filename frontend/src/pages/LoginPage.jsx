@@ -32,8 +32,8 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <section className="auth-panel">
-        <h1>Khabar</h1>
-        <p className="date-label">Your news. No noise.</p>
+        <p className="date-label">Welcome back</p>
+        <h1>Log in</h1>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Email
@@ -61,7 +61,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="auth-switch">
-          New to Khabar? <Link to="/signup">Create an account</Link>
+          New here? <Link to="/signup">Create an account</Link>
         </p>
       </section>
     </main>
