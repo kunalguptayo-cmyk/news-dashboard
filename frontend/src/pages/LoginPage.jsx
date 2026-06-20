@@ -23,7 +23,7 @@ export default function LoginPage() {
       await login(email, password);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err.message);
+      setError(typeof err.message === "string" ? err.message : "Could not log in");
     } finally {
       setPending(false);
     }
@@ -32,8 +32,8 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <section className="auth-panel">
-        <p className="date-label">Welcome back</p>
-        <h1>Log in</h1>
+        <h1>Khabar</h1>
+        <p className="tagline">Your news. No noise.</p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Email
@@ -61,7 +61,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="auth-switch">
-          New here? <Link to="/signup">Create an account</Link>
+          New to Khabar? <Link to="/signup">Create an account</Link>
         </p>
       </section>
     </main>

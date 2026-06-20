@@ -1,5 +1,24 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
+function getErrorMessage(payload, fallback) {
+  const detail = payload?.detail;
+  if (typeof detail === "string") {
+    return detail;
+  }
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => item?.msg || item?.message || JSON.stringify(item))
+      .join(", ");
+  }
+  if (detail && typeof detail === "object") {
+    return detail.msg || detail.message || JSON.stringify(detail);
+  }
+  if (typeof payload?.message === "string") {
+    return payload.message;
+  }
+  return fallback;
+}
+
 export function getToken() {
   return localStorage.getItem("token");
 }
@@ -38,7 +57,7 @@ async function authenticate(path, email, password) {
   });
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.detail || "Authentication failed");
+    throw new Error(getErrorMessage(payload, "Authentication failed"));
   }
   const data = await response.json();
   setToken(data.access_token);

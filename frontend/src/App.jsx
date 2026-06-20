@@ -28,6 +28,7 @@ function DigestPage() {
   const [digest, setDigest] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,11 +55,17 @@ function DigestPage() {
   }
 
   const articles = digest?.articles || [];
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredArticles = normalizedSearch
+    ? articles.filter((article) =>
+        (article.title || "").toLowerCase().includes(normalizedSearch)
+      )
+    : articles;
 
   return (
     <main className="page">
       <nav className="top-nav" aria-label="Account">
-        <Link to="/">Digest</Link>
+        <Link to="/" className="brand-link">Khabar</Link>
         <button
           type="button"
           onClick={() => {
@@ -71,11 +78,22 @@ function DigestPage() {
       </nav>
       <DigestHeader date={digest.date} count={articles.length} />
       <TopicBreakdown breakdown={digest.topic_breakdown} />
+      <label className="search-bar">
+        <span>Search headlines</span>
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder="Search loaded stories"
+        />
+      </label>
       <section className="article-list" aria-label="Daily news articles">
         {articles.length === 0 ? (
-          <div className="state-panel">No articles are ready yet.</div>
+          <div className="state-panel">No stories are ready yet.</div>
+        ) : filteredArticles.length === 0 ? (
+          <div className="state-panel">No headlines match your search.</div>
         ) : (
-          articles.map((article) => <ArticleCard key={article.id} {...article} />)
+          filteredArticles.map((article) => <ArticleCard key={article.id} {...article} />)
         )}
       </section>
     </main>
